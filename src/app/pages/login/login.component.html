@@ -23,11 +23,10 @@
               <input
                 name="Username"
                 formControlName="Username"
-                type="email"
-                id="form2Example18"
+                type="email" placeholder="Enter email user name"
+                id="form2Example18" required
                 class="form-control form-control-lg"
               />
-              <label class="form-label" for="form2Example18">User Name</label>
             </div>
 
             <div data-mdb-input-init class="form-outline mb-4">
@@ -35,10 +34,9 @@
                 name="Password"
                 formControlName="Password"
                 type="Password"
-                id="form2Example28"
+                id="form2Example28" placeholder="Password"
                 class="form-control form-control-lg"
               />
-              <label class="form-label" for="form2Example28">Password</label>
             </div>
 
             <div class="pt-1 mb-4">
@@ -56,7 +54,7 @@
             <p>
               Don't have an account?
               <a class="link-info" (click)="isLoginView = false"
-                >Register here</a
+               style="cursor:pointer;" >Register here</a
               >
             </p>
           </form>
@@ -114,7 +112,7 @@
 
             <p>
               Don't have an account?
-              <a class="link-info" (click)="isLoginView = true">Login here</a>
+              <a class="link-info" (click)="isLoginView = true" style="cursor: pointer;">Login here</a>
             </p>
           </form>
           }

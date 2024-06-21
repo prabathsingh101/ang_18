@@ -12,6 +12,8 @@ import { Users } from '../models/users';
 import { UsersService } from '../services/users.service';
 import { LoginService } from '../services/login.service';
 import { UserStoreService } from '../services/user-store.service';
+import { ToastrService } from 'ngx-toastr';
+import ValidateForm from '../helpers/validationform';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +27,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private loginSvc: LoginService,
-    private userStore: UserStoreService
+    private userStore: UserStoreService,
+    private toast: ToastrService
   ) {}
 
   isLoginView: boolean = true;
@@ -48,9 +51,9 @@ export class LoginComponent implements OnInit {
   user!: Users;
 
   ngOnInit(): void {
-    this.loginForms = new FormGroup({
-      Username: new FormControl('', Validators.required),
-      Password: new FormControl('', Validators.required),
+    this.loginForms = this.fb.group({
+      Username: ['', Validators.required],
+      Password: ['', Validators.required],
     });
   }
 
@@ -91,6 +94,7 @@ export class LoginComponent implements OnInit {
       alert('No User Found');
     }
   }
+
   login() {
     if (this.loginForms.valid) {
       this.user = {
@@ -102,22 +106,28 @@ export class LoginComponent implements OnInit {
       this.loginSvc.login(this.loginForms.value).subscribe({
         next: (res) => {
           //this.loginForms.reset();
-          let data= JSON.stringify(res);
+          let data = JSON.stringify(res);
           let loggeduser = JSON.parse(data);
-          this.loginSvc.storeToken(loggeduser.token);
-          this.loginSvc.storeRefreshToken(loggeduser.refreshToken);
-
-          const tokenPayload = this.loginSvc.decodedToken();
-          this.userStore.setFullNameForStore(tokenPayload.name);
-          this.userStore.setRoleForStore(tokenPayload.role);
-          //this.toast.success({detail:"SUCCESS", summary:res.message, duration: 5000});
-          this.router.navigateByUrl('dashboard')
+          if (loggeduser.statusCode === 0) {
+            this.toast.error(loggeduser.message, 'Failed', { timeOut: 5000 });
+          } else {
+            this.loginSvc.storeToken(loggeduser.token);
+            this.loginSvc.storeRefreshToken(loggeduser.refreshToken);
+            const tokenPayload = this.loginSvc.decodedToken();
+            this.userStore.setFullNameForStore(tokenPayload.name);
+            this.userStore.setRoleForStore(tokenPayload.role);
+            this.toast.success('Logged in successfully', 'Success', {
+              timeOut: 3000,
+            });
+            this.router.navigateByUrl('dashboard');
+          }
         },
         error: (err) => {
-          //this.toast.error({detail:"ERROR", summary:"Something when wrong!", duration: 5000});
-          console.log(err);
+          this.toast.error('Logged in failed', 'Failed', { timeOut: 5000 });
         },
       });
+    }else{
+      ValidateForm.validateAllFormFields(this.loginForms);
     }
   }
 }

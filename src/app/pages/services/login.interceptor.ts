@@ -13,9 +13,12 @@ import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { TokenApiModel } from '../models/token-api.model';
 import { RefreshToken } from '../models/refreshToken.model';
+import { ToastrService } from 'ngx-toastr';
 
 export const loginInterceptor: HttpInterceptorFn = (req, next) => {
   var loginSvc = inject(LoginService);
+
+  var toast = inject(ToastrService);
 
   var httpRequestClient = inject(HttpClient);
 
@@ -34,7 +37,7 @@ export const loginInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         return handleUnAuthorizedError(cloneRequest, next);
       }
-      return throwError(()=> error)
+      return throwError(() => error);
     })
   );
   function handleUnAuthorizedError(req: HttpRequest<any>, next: HttpHandlerFn) {
@@ -53,7 +56,7 @@ export const loginInterceptor: HttpInterceptorFn = (req, next) => {
       }),
       catchError((err) => {
         return throwError(() => {
-          //this.toast.warning({detail:"Warning", summary:"Token is expired, Please Login again"});
+          toast.warning('Token is expired, Please Login again', 'warning');
           loginSvc.Logout();
         });
       })

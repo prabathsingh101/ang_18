@@ -12,9 +12,9 @@ import { UsersService } from '../services/users.service';
   styleUrl: './users.component.css',
 })
 export class UsersComponent implements OnInit {
-  constructor(private http: HttpClient, private svcUsers: UsersService) {}
+  constructor(private http: HttpClient, private userSvc: UsersService) {}
 
-  users:any;
+  users!:any;
 
   ngOnInit(): void {
     this.getAllUsers();;
@@ -22,7 +22,7 @@ export class UsersComponent implements OnInit {
   }
 
   getAllUsers(){
-    this.svcUsers.GetAllUsers().subscribe((res=>{
+    this.userSvc.GetAllUsers().subscribe((res=>{
       this.users=res;
     }))
   }

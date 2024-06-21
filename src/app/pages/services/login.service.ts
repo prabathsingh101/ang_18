@@ -10,19 +10,16 @@ import { JwtHelperService } from '@auth0/angular-jwt';
   providedIn: 'root',
 })
 export class LoginService {
+
   private baseUrl: string = 'https://localhost:7060/api/Auth/';
 
   private userPayload:any;
 
-  public responseData: any = '';
+  //public responseData: any = '';
 
+  //localData = sessionStorage.getItem('token');
 
-
-  localData = sessionStorage.getItem('token');
-
-
-
-  loggedUserData: any;
+  //loggedUserData: any;
 
   constructor(private http: HttpClient, private router: Router) {
     this.userPayload = this.decodedToken();
@@ -49,7 +46,7 @@ export class LoginService {
   decodedToken(){
     const jwtHelper = new JwtHelperService();
     const token = this.getToken()!;
-    console.log(jwtHelper.decodeToken(token))
+    console.log('decodetoken',jwtHelper.decodeToken(token))
     return jwtHelper.decodeToken(token)
   }
   getfullNameFromToken(){
@@ -62,7 +59,6 @@ export class LoginService {
     return this.userPayload.role;
   }
   renewToken(tokenApi: TokenApiModel) {
-    //debugger;
     return this.http.post<any>(`${this.baseUrl}refresh`, tokenApi);
   }
 

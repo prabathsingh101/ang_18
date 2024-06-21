@@ -14,6 +14,8 @@ import { LoginService } from '../services/login.service';
 export class DashboardComponent implements OnInit {
   images!: ImagesModel;
 
+  
+
   inputData: any = {
     'p.data1': 'value p-1',
     'p.data2': 'value p-2',
