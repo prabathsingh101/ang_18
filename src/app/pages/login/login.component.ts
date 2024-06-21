@@ -10,21 +10,29 @@ import {
 import { Router } from '@angular/router';
 import { Users } from '../models/users';
 import { UsersService } from '../services/users.service';
+import { LoginService } from '../services/login.service';
+import { UserStoreService } from '../services/user-store.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule],
-  providers: [UsersService],
+  providers: [UsersService, LoginService, UserStoreService],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
 export class LoginComponent implements OnInit {
-  constructor(private fb: FormBuilder, private services: UsersService) {}
+  constructor(
+    private fb: FormBuilder,
+    private loginSvc: LoginService,
+    private userStore: UserStoreService
+  ) {}
 
   isLoginView: boolean = true;
 
   loginForms!: FormGroup;
+
+  responseData: any;
 
   userRegisterObj: any = {
     userName: '',
@@ -90,20 +98,25 @@ export class LoginComponent implements OnInit {
         Password: this.loginForms.value.Password,
       };
       console.log('users', this.user);
-      this.services.Login(this.user).subscribe((res:any) => {
 
-        console.log('response', res);
-        localStorage.setItem('token', JSON.stringify(res));
+      this.loginSvc.login(this.loginForms.value).subscribe({
+        next: (res) => {
+          //this.loginForms.reset();
+          let data= JSON.stringify(res);
+          let loggeduser = JSON.parse(data);
+          this.loginSvc.storeToken(loggeduser.token);
+          this.loginSvc.storeRefreshToken(loggeduser.refreshToken);
 
-        // let TOKEN_STORED_DATA: any = localStorage.getItem('token');
-        // let TOKEN_PARSED_DATA = JSON.parse(TOKEN_STORED_DATA);
-        // let ACCESS_TOKEN = TOKEN_PARSED_DATA.token;
-        // console.log('ACCESS_TOKEN', ACCESS_TOKEN);
-
-        let data = Object.entries(res);
-        if (data[5][1]) {
-          this.router.navigateByUrl('dashboard');
-        }
+          const tokenPayload = this.loginSvc.decodedToken();
+          this.userStore.setFullNameForStore(tokenPayload.name);
+          this.userStore.setRoleForStore(tokenPayload.role);
+          //this.toast.success({detail:"SUCCESS", summary:res.message, duration: 5000});
+          this.router.navigateByUrl('dashboard')
+        },
+        error: (err) => {
+          //this.toast.error({detail:"ERROR", summary:"Something when wrong!", duration: 5000});
+          console.log(err);
+        },
       });
     }
   }

@@ -3,6 +3,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { LayoutComponent } from './pages/layout/layout.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { UsersComponent } from './pages/users/users.component';
+import { ImagesComponent } from './pages/images/images.component';
 
 export const routes: Routes = [
     {
@@ -25,6 +26,9 @@ export const routes: Routes = [
             {
               path:'users',
                 component:UsersComponent
+            },
+            {
+              path:'images', component: ImagesComponent
             }
         ]
     }

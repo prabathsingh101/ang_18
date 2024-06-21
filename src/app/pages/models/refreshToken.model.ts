@@ -1,5 +1,5 @@
 export class RefreshToken{
-  accessToken?: string;
-  refreshToken?: string;
+  AccessToken?: string;
+  RefreshToken?: string;
 
 }

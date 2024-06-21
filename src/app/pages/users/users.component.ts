@@ -12,19 +12,18 @@ import { UsersService } from '../services/users.service';
   styleUrl: './users.component.css',
 })
 export class UsersComponent implements OnInit {
-  constructor(private http: HttpClient, private svc: UsersService) {}
+  constructor(private http: HttpClient, private svcUsers: UsersService) {}
+
+  users:any;
 
   ngOnInit(): void {
-    this.getName();
-    this.svc.$refreshTokenReceived.subscribe((res:any)=>{
-      console.log('res', res);
-      this.getName();
-    })
+    this.getAllUsers();;
+
   }
 
-  getName() {
-    this.svc.getName().subscribe((res) => {
-      console.log('users', JSON.stringify(res));
-    });
+  getAllUsers(){
+    this.svcUsers.GetAllUsers().subscribe((res=>{
+      this.users=res;
+    }))
   }
 }

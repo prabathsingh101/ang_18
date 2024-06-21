@@ -1,37 +1,62 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHandler,
+  HttpHandlerFn,
+  HttpInterceptorFn,
+  HttpRequest,
+} from '@angular/common/http';
+import { LoginService } from './login.service';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
-import { UsersService } from './users.service';
+import { catchError, switchMap, throwError } from 'rxjs';
+import { Router } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
+import { TokenApiModel } from '../models/token-api.model';
+import { RefreshToken } from '../models/refreshToken.model';
 
 export const loginInterceptor: HttpInterceptorFn = (req, next) => {
-  let TOKEN_PARSED_DATA: any;
-  let TOKEN_STORED_DATA: any;
-  let ACCESS_TOKEN: any;
-  let REFRESH_TOKEN: any;
-  let EMAIL_ID: any;
-  const userSvc = inject(UsersService);
-  TOKEN_STORED_DATA = localStorage.getItem('token');
-  if (TOKEN_STORED_DATA != null) {
-    TOKEN_PARSED_DATA = JSON.parse(TOKEN_STORED_DATA);
-    ACCESS_TOKEN = TOKEN_PARSED_DATA.token;
-    REFRESH_TOKEN = TOKEN_PARSED_DATA.refreshToken;
-    EMAIL_ID = TOKEN_PARSED_DATA.username;
-  }
-  const cloneRequest = req.clone({
-    setHeaders: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+  var loginSvc = inject(LoginService);
+
+  var httpRequestClient = inject(HttpClient);
+
+  const myToken = loginSvc.getToken();
+
+  let router = inject(Router);
+
+  let cloneRequest = req.clone({
+    setHeaders: {
+      Authorization: `Bearer ${myToken}`,
+    },
   });
+
   return next(cloneRequest).pipe(
-    catchError((err: HttpErrorResponse) => {
-      //debugger;
-      if (err.status === 401) {
-        const isRefresh = confirm(
-          'Your session is expired. Do you want to continiue?'
-        );
-        if (isRefresh) {
-          userSvc.$refreshToken.next(true);
-        }
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        return handleUnAuthorizedError(cloneRequest, next);
       }
-      return throwError(err);
+      return throwError(()=> error)
     })
   );
+  function handleUnAuthorizedError(req: HttpRequest<any>, next: HttpHandlerFn) {
+    let tokeApiModel = new TokenApiModel();
+    tokeApiModel.accessToken = loginSvc.getToken()!;
+    tokeApiModel.refreshToken = loginSvc.getRefreshToken()!;
+
+    return loginSvc.renewToken(tokeApiModel).pipe(
+      switchMap((data: TokenApiModel) => {
+        loginSvc.storeRefreshToken(data.refreshToken);
+        loginSvc.storeToken(data.accessToken);
+        req = req.clone({
+          setHeaders: { Authorization: `Bearer ${data.accessToken}` }, // "Bearer "+myToken
+        });
+        return next(req);
+      }),
+      catchError((err) => {
+        return throwError(() => {
+          //this.toast.warning({detail:"Warning", summary:"Token is expired, Please Login again"});
+          loginSvc.Logout();
+        });
+      })
+    );
+  }
 };

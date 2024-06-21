@@ -3,17 +3,19 @@
     <thead>
       <tr>
         <th scope="col">ID</th>
-        <th scope="col">User Name</th>
-        <th scope="col">Email</th>
+        <th scope="col">File</th>
+        <th scope="col">File Name</th>
+        <th scope="col">Description</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
-      @for (item of users; track $index) {
+      @for (item of images; track $index) {
       <tr>
         <td>{{ item.id }}</td>
-        <td>{{ item.userName }}</td>
-        <td>{{ item.email }}</td>
+        <td>{{ item.file }}</td>
+        <td>{{ item.fileName }}</td>
+        <td>{{ item.fileDescription }}</td>
         <td>
           <button style="margin-right: 2px;" type="button" class="btn btn-primary">Edit</button>
           <button type="button" class="btn btn-danger">Delete</button>
